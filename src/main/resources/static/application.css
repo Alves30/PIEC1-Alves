@@ -1,0 +1,127 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #10375C;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #FF7F00;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.blue-letter{
+    color: #10375C;
+}
+#home a:hover {
+    color: #10375C;
+}
+
+
+.navbar h1 {
+    margin: 0;
+}
+
+.navbar h2 {
+    margin: 0;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+}
+
+#controls {
+    margin: 20px;
+}
+
+#formats {
+    margin: 20px;
+}
+
+#recordingsList {
+    margin: 20px;
+}
+
+/* Estilo para a div que contém a partitura */
+#score {
+    background-color: #f0f0f0; /* Cor de fundo da div (cinza claro) */
+    padding: 20px; /* Espaçamento interno */
+    border-radius: 10px; /* Bordas arredondadas */
+    margin: 20px auto; /* Centraliza a div e adiciona margem */
+    width: 80%; /* Largura da div */
+    max-width: 800px; /* Largura máxima */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+/* Estilo para o canvas (partitura) */
+#sheet-music {
+    background-color: white; /* Fundo branco para a partitura */
+    display: block; /* Garante que o canvas se comporte como um bloco */
+    margin: 0 auto; /* Centraliza o canvas */
+    border: 1px solid #ccc; /* Borda sutil */
+}
+
+/* Estilo específico para os botões na div #controls */
+#recordButton, #pauseButton, #stopButton, #clearSheetMusicButton, #clearRecordingsButton {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 20px 10px; /* Margem específica para os botões na div #controls */
+    font-size: 14px; /* Tamanho da fonte */
+    transition: background-color 0.3s ease; /* Efeito de transição */
+}
+
+/* Efeito hover para os botões na div #controls */
+#recordButton:hover, #pauseButton:hover, #stopButton:hover, #clearSheetMusicButton:hover, #clearRecordingsButton:hover {
+    background-color: lightyellow; /* Cor de fundo ao passar o mouse */
+}
+#recordButton.recording {
+    background-color: #ff0000; /* Vermelho */
+    color: white; /* Texto branco para melhor contraste */
+}
+#recordButton.recording:hover {
+    background-color: #cc0000; /* Vermelho mais escuro ao passar o mouse */
+}
+
+/* Estilo específico para os botões de Upload e Save to disk */
+#recordingsList a {
+    background-color: #ffffff;
+    color: rgb(0, 0, 0);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px; /* Margem menor para os botões de Upload e Save */
+    text-decoration: none; /* Remove sublinhado de links */
+    display: inline-block; /* Garante que os links se comportem como botões */
+    font-size: 14px; /* Tamanho da fonte */
+    transition: background-color 0.3s ease; /* Efeito de transição */
+}
+
+/* Efeito hover para os botões de Upload e Save to disk */
+#recordingsList a:hover {
+    background-color: #f0f0f0; /* Cor de fundo ao passar o mouse */
+}
+
+#controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#formats {
+    text-align: center;
+    color: #F3C623;
+}
+
+p {
+    color: #F3C623;
+    margin: 5px;
+}

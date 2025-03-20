@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt_br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melodify</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon" href="nota.png">
+</head>
+<body>
+<nav class="navbar">
+    <h2 id="home"><a th:href="@{/}">Home</a></h2>
+    <h1 id="titulo"><span class="blue-letter">M</span>elodify</h1>
+</nav>
+<div id="azul">
+    <h1 class="outline">Transforme suas ideias em música</h1>
+    <img src="beethoven.png" height="180" alt="imagem de beethoven">
+    <div id="preto"></div>
+</div>
+<main>
+    <h3>Bem vindo ao Melodify</h3>
+    <p>Esse site foi dessenvolvido por estudantes da UFRPE-UABJ do curso de engenharia da computação.</p>
+    <p>Fazendo uso da <a href="https://developer.mozilla.org/pt-BR/docs/Web/API/Web_Audio_API">Web Audio Api</a> tornamos possivel a criação de partituras musicais apenas com a captura de audio.</p>
+    <div id="principal_bottom"> <a th:href="@{/application}">Comece aqui</a> </div>
+</main>
+</body>
+</html>
