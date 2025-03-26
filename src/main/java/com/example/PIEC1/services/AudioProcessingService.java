@@ -22,7 +22,7 @@ public class AudioProcessingService {
         final String[] notas = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
         int notaNumero = (int) Math.round(12 * (Math.log(frequencia / 440.0) / Math.log(2)));
         int indiceNota = (notaNumero + 69) % 12;
-        int oitava = (notaNumero + 69) / 12;
+        int oitava = (notaNumero + 69) / 12  - 1;
         return notas[indiceNota] + oitava;
     }
 

@@ -24,11 +24,29 @@
 <div id="formats">Formato: comece a gravar para ver a taxa de amostragem</div>
 <p><strong>Gravações:</strong></p>
 <ol id="recordingsList"></ol>
-<script src="recorder.js"></script>
-<script src="script.js" defer></script>
+
 
 <div id="score">
     <canvas id="sheet-music"></canvas>
 </div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3>Editar Partitura</h3>
+        <input type="text" id="editTitle" placeholder="Título da Partitura">
+        <textarea id="editNotes" rows="10" placeholder="Notas (ex: C4,D5,E3)"></textarea>
+        <button onclick="saveEditedSheet()">Salvar Alterações</button>
+    </div>
+</div>
+
+<div id="savedSheets">
+    <h3>Partituras Salvas</h3>
+    <button id="clearSheetsButton">Limpar Todas</button>
+    <ul id="savedSheetsList"></ul>
+</div>
+
+<script src="recorder.js"></script>
+<script src="script.js" defer></script>
 </body>
 </html>
