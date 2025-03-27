@@ -1,280 +1,444 @@
-//webkitURL is deprecated but nevertheless
-URL = window.URL || window.webkitURL;
+// Variáveis globais
+let gumStream;
+let rec;
+let input;
+let audioContext;
+let currentEditingId = null;
 
-var gumStream; //stream from getUserMedia()
-var rec; //Recorder.js object
-var input; //MediaStreamAudioSourceNode we'll be recording
+// Constantes
+const recordButton = document.getElementById("recordButton");
+const stopButton = document.getElementById("stopButton");
+const pauseButton = document.getElementById("pauseButton");
+const clearSheetMusicButton = document.getElementById("clearSheetMusicButton");
+const clearRecordingsButton = document.getElementById("clearRecordingsButton");
+const clearSheetsButton = document.getElementById("clearSheetsButton");
+const recordingsList = document.getElementById("recordingsList");
+const savedSheetsList = document.getElementById("savedSheetsList");
 
-// shim for AudioContext when it's not avb.
-var AudioContext = window.AudioContext || window.webkitAudioContext;
-var audioContext; //audio context to help us record
-
-var recordButton = document.getElementById("recordButton");
-var stopButton = document.getElementById("stopButton");
-var pauseButton = document.getElementById("pauseButton");
-
-// Event listeners originais
-recordButton.addEventListener("click", startRecording);
-stopButton.addEventListener("click", stopRecording);
-pauseButton.addEventListener("click", pauseRecording);
-
-// ============= NOVOS EVENT LISTENERS =============
-document.getElementById("clearSheetMusicButton").addEventListener("click", clearSheetMusic);
-document.getElementById("clearRecordingsButton").addEventListener("click", clearRecordings);
-document.getElementById("clearSheetsButton").addEventListener("click", async () => {
-    await fetch('/api/sheets', { method: 'DELETE' });
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
     loadSavedSheets();
 });
 
-// ============= FUNÇÕES ORIGINAIS =============
-function clearSheetMusic() {
-    var canvas = document.getElementById("sheet-music");
-    var context = canvas.getContext("2d");
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    console.log("Partitura limpa.");
+function setupEventListeners() {
+    // Botões de gravação
+    recordButton.addEventListener("click", startRecording);
+    stopButton.addEventListener("click", stopRecording);
+    pauseButton.addEventListener("click", pauseRecording);
+
+    // Botões de limpeza
+    clearSheetMusicButton.addEventListener("click", clearSheetMusic);
+    clearRecordingsButton.addEventListener("click", clearRecordings);
+    clearSheetsButton.addEventListener("click", confirmClearAllSheets);
+
+    // Modal
+    document.querySelector('.close-btn').addEventListener('click', closeModal);
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
 }
 
-function clearRecordings() {
-    var recordingsList = document.getElementById("recordingsList");
-    recordingsList.innerHTML = "";
-    console.log("Gravações limpas.");
-}
-
+// Funções de gravação de áudio
 function startRecording() {
-    console.log("recordButton clicked");
+    console.log("Iniciando gravação...");
 
-    var constraints = { audio: true, video: false };
+    const constraints = {
+        audio: {
+            echoCancellation: false, // Desative para melhor qualidade musical
+            noiseSuppression: false, // Desative para capturar todas as frequências
+            autoGainControl: false,  // Desative para evitar normalização automática
+            channelCount: 1,         // Mono é suficiente para análise musical
+            sampleRate: 44100,       // Taxa de amostragem de CD
+            sampleSize: 16           // Resolução de 16 bits
+        },
+        video: false
+    };
 
     recordButton.disabled = true;
     stopButton.disabled = false;
     pauseButton.disabled = false;
     recordButton.classList.add("recording");
 
-    navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-        audioContext = new AudioContext();
-        document.getElementById("formats").innerHTML = "Format: 1 channel pcm @ " + audioContext.sampleRate / 1000 + "kHz";
+    // Fechar qualquer stream existente
+    if (gumStream) {
+        gumStream.getTracks().forEach(track => track.stop());
+    }
 
-        gumStream = stream;
-        input = audioContext.createMediaStreamSource(stream);
-        rec = new Recorder(input, { numChannels: 1 });
+    // Reiniciar o AudioContext se estiver em estado suspenso
+    if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+            console.log("AudioContext retomado");
+        });
+    }
 
-        rec.record();
-        console.log("Recording started");
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(function(stream) {
+            // Configuração do contexto de áudio
+            audioContext = new AudioContext();
 
-    }).catch(function(err) {
-        recordButton.disabled = false;
-        stopButton.disabled = true;
-        pauseButton.disabled = true;
-        recordButton.classList.remove("recording");
-    });
+            // Elemento para mostrar informações
+            document.getElementById("formats").textContent =
+                `Format: 1 channel pcm @ ${audioContext.sampleRate / 1000}kHz`;
+
+            // Criação da cadeia de processamento
+            gumStream = stream;
+            input = audioContext.createMediaStreamSource(stream);
+
+            // Adicionando filtros (opcional)
+            const highPassFilter = audioContext.createBiquadFilter();
+            highPassFilter.type = "highpass";
+            highPassFilter.frequency.value = 80;
+
+            const lowPassFilter = audioContext.createBiquadFilter();
+            lowPassFilter.type = "lowpass";
+            lowPassFilter.frequency.value = 4000;
+
+            // Conexão dos nós de áudio
+            input.connect(highPassFilter);
+            highPassFilter.connect(lowPassFilter);
+
+            // Inicializa o gravador conectado ao último filtro
+            rec = new Recorder(lowPassFilter, { numChannels: 1 });
+
+            // Inicia a gravação
+            rec.record();
+            console.log("Gravação iniciada com sucesso com filtros");
+        })
+        .catch(function(err) {
+            console.error("Erro ao acessar microfone:", err);
+            resetRecordingButtons();
+
+            // Feedback visual para o usuário
+            document.getElementById("formats").textContent =
+                `Erro: ${err.name} - ${err.message}`;
+        });
 }
 
 function stopRecording() {
-    console.log("stopButton clicked");
+    console.log("Parando gravação...");
 
     stopButton.disabled = true;
     recordButton.disabled = false;
     pauseButton.disabled = true;
-    pauseButton.innerHTML = "Pause";
+    pauseButton.textContent = "Pausar";
     recordButton.classList.remove("recording");
 
-    rec.stop();
-    gumStream.getAudioTracks()[0].stop();
-    rec.exportWAV(createDownloadLink);
+    if (rec && rec.recording) {
+        rec.stop();
+    }
+
+    if (gumStream) {
+        gumStream.getAudioTracks()[0].stop();
+    }
+
+    if (rec) {
+        rec.exportWAV(createDownloadLink);
+    }
 }
 
 function pauseRecording() {
-    console.log("pauseButton clicked rec.recording=", rec.recording);
+    if (!rec) return;
+
     if (rec.recording) {
         rec.stop();
-        pauseButton.innerHTML = "Resume";
+        pauseButton.textContent = "Retomar";
     } else {
         rec.record();
-        pauseButton.innerHTML = "Pause";
+        pauseButton.textContent = "Pausar";
     }
 }
 
-// ============= FUNÇÕES MODIFICADAS =============
-function createDownloadLink(blob) {
-    var url = URL.createObjectURL(blob);
-    var au = document.createElement('audio');
-    var li = document.createElement('li');
-    var link = document.createElement('a');
-    var filename = new Date().toISOString();
+function resetRecordingButtons() {
+    recordButton.disabled = false;
+    stopButton.disabled = true;
+    pauseButton.disabled = true;
+    pauseButton.textContent = "Pausar";
+    recordButton.classList.remove("recording");
 
-    au.controls = true;
-    au.src = url;
+    // Limpar referências
+    if (gumStream) {
+        gumStream.getTracks().forEach(track => track.stop());
+        gumStream = null;
+    }
 
-    link.href = url;
-    link.download = filename + ".wav";
-    link.innerHTML = "Save to disk";
+    if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close().then(() => {
+            audioContext = null;
+            console.log("AudioContext fechado");
+        });
+    }
 
-    li.appendChild(au);
-    li.appendChild(document.createTextNode(filename + ".wav "));
-    li.appendChild(link);
+    rec = null;
+}
 
-    var upload = document.createElement('a');
-    upload.href = "#";
-    upload.innerHTML = "Upload";
-    upload.addEventListener("click", function(event) {
-        var xhr = new XMLHttpRequest();
-        xhr.onload = function(e) {
-            if (this.readyState === 4) {
-                console.log("Notas detectadas:", e.target.responseText);
-                renderSheetMusic(e.target.responseText);
-                saveSheet(e.target.responseText); // SALVAMENTO AUTOMÁTICO AQUI
+// Funções de limpeza
+function clearSheetMusic() {
+    const canvas = document.getElementById("sheet-music");
+    if (canvas) {
+        const context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = canvas.width; // Reset completo
+        console.log("Partitura limpa com sucesso");
+    }
+}
+
+function clearRecordings() {
+    if (recordingsList) {
+        recordingsList.innerHTML = "";
+        console.log("Gravações limpas com sucesso");
+    }
+
+    // Parar qualquer gravação em andamento
+    if (rec && rec.recording) {
+        rec.stop();
+    }
+    if (gumStream) {
+        gumStream.getAudioTracks().forEach(track => track.stop());
+    }
+
+    resetRecordingButtons();
+}
+
+async function confirmClearAllSheets() {
+    if (confirm("Tem certeza que deseja apagar TODAS as partituras salvas?")) {
+        try {
+            const response = await fetch('/api/sheets', { method: 'DELETE' });
+            if (response.ok) {
+                loadSavedSheets();
+            } else {
+                console.error("Erro ao limpar partituras");
             }
-        };
-        var fd = new FormData();
-        fd.append("file", blob, filename);
-        xhr.open("POST", "/api/audio/process", true);
-        xhr.send(fd);
+        } catch (error) {
+            console.error("Erro:", error);
+        }
+    }
+}
+
+// Funções de manipulação de partituras
+function createDownloadLink(blob) {
+    if (!recordingsList) return;
+
+    const url = URL.createObjectURL(blob);
+    const li = document.createElement('li');
+    const audio = document.createElement('audio');
+    const saveLink = document.createElement('a');
+    const filename = new Date().toISOString();
+
+    audio.controls = true;
+    audio.src = url;
+
+    saveLink.href = url;
+    saveLink.download = `${filename}.wav`;
+    saveLink.textContent = "Salvar";
+
+    const uploadLink = document.createElement('a');
+    uploadLink.href = "#";
+    uploadLink.textContent = "Processar";
+    uploadLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        processAudio(blob, filename);
     });
 
-    li.appendChild(document.createTextNode(" "));
-    li.appendChild(upload);
+    li.appendChild(audio);
+    li.appendChild(document.createTextNode(` ${filename}.wav `));
+    li.appendChild(saveLink);
+    li.appendChild(document.createTextNode(' '));
+    li.appendChild(uploadLink);
+
     recordingsList.appendChild(li);
 }
 
-
-
-// ============= NOVAS FUNÇÕES DE EDIÇÃO =============
-let currentEditingId = null;
-
-function openEditSheet(id, title, notes) {
-    currentEditingId = id;
-    document.getElementById('editTitle').value = title;
-    document.getElementById('editNotes').value = notes;
-    document.getElementById('editModal').style.display = 'block';
-}
-
-function closeModal() {
-    document.getElementById('editModal').style.display = 'none';
-}
-
-async function saveEditedSheet() {
-    const title = document.getElementById('editTitle').value;
-    const notes = document.getElementById('editNotes').value;
-
+async function processAudio(blob, filename) {
     try {
-        await fetch(`/api/sheets/${currentEditingId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, notes })
-        });
-        loadSavedSheets();
-        closeModal();
-    } catch (error) {
-        console.error("Erro ao salvar edição:", error);
-    }
-}
+        const formData = new FormData();
+        formData.append("file", blob, filename);
 
-// ============= ATUALIZAÇÃO DA LISTAGEM =============
-async function loadSavedSheets() {
-    try {
-        const response = await fetch('/api/sheets');
-        const sheets = await response.json();
-        const sheetList = document.getElementById('savedSheetsList');
-        sheetList.innerHTML = '';
-
-        sheets.forEach(sheet => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="sheet-title">${sheet.title}</span>
-                <button onclick="openEditSheet('${sheet.id}', '${sheet.title}', '${sheet.notes}')">Editar</button>
-                <button onclick="renderSavedSheet('${sheet.notes}')">Visualizar</button>
-            `;
-            sheetList.appendChild(li);
+        const response = await fetch("/api/audio/process", {
+            method: "POST",
+            body: formData
         });
+
+        if (response.ok) {
+            const notes = await response.text();
+            renderSheetMusic(notes);
+            await saveSheet(notes);
+        } else {
+            console.error("Erro no processamento de áudio");
+        }
     } catch (error) {
-        console.error("Erro ao carregar partituras:", error);
+        console.error("Erro:", error);
     }
 }
 
 async function saveSheet(notes) {
     try {
-        const title = `Partitura ${new Date().toLocaleDateString()}`; // Título padrão
-        await fetch('/api/sheets', {
+        const title = `Partitura ${new Date().toLocaleString()}`;
+        const response = await fetch('/api/sheets', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json' // 👈 Corrige o Content-Type
-            },
-            body: JSON.stringify({
-                title: title,
-                notes: notes
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, notes })
         });
-        loadSavedSheets();
+
+        if (response.ok) {
+            loadSavedSheets();
+        } else {
+            console.error("Erro ao salvar partitura");
+        }
     } catch (error) {
-        console.error("Erro ao salvar partitura:", error);
+        console.error("Erro:", error);
     }
 }
 
-// Função para salvar edição
+async function loadSavedSheets() {
+    if (!savedSheetsList) return;
+
+    try {
+        const response = await fetch('/api/sheets');
+        if (response.ok) {
+            const sheets = await response.json();
+            renderSavedSheetsList(sheets);
+        } else {
+            console.error("Erro ao carregar partituras");
+        }
+    } catch (error) {
+        console.error("Erro:", error);
+    }
+}
+
+function renderSavedSheetsList(sheets) {
+    savedSheetsList.innerHTML = '';
+
+    sheets.forEach(sheet => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span class="sheet-title">${escapeHtml(sheet.title)}</span>
+            <div class="sheet-actions">
+                <button onclick="openEditSheet('${sheet.id}', '${escapeHtml(sheet.title)}', '${escapeHtml(sheet.notes)}')">
+                    Editar
+                </button>
+                <button onclick="renderSavedSheet('${escapeHtml(sheet.notes)}')">
+                    Visualizar
+                </button>
+                <button onclick="deleteSheet('${sheet.id}')">
+                    Excluir
+                </button>
+            </div>
+        `;
+        savedSheetsList.appendChild(li);
+    });
+}
+
+function escapeHtml(text) {
+    return text.replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+// Funções do modal
+function openEditSheet(id, title, notes) {
+    currentEditingId = id;
+    document.getElementById('editTitle').value = title;
+    document.getElementById('editNotes').value = notes;
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('editModal').style.display = 'none';
+    currentEditingId = null;
+}
+
 async function saveEditedSheet() {
     const title = document.getElementById('editTitle').value;
     const notes = document.getElementById('editNotes').value;
 
-    try {
-        await fetch(`/api/sheets/${currentEditingId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json' // 👈 Header correto
-            },
-            body: JSON.stringify({
-                title: title,
-                notes: notes
-            })
-        });
-        loadSavedSheets();
-        closeModal();
-    } catch (error) {
-        console.error("Erro ao salvar edição:", error);
-    }
-}
-
-function renderSavedSheet(notes) {
-    renderSheetMusic(notes); // Reutiliza a função existente de renderização
-}
-
-// ============= INICIALIZAÇÃO =============
-window.addEventListener('load', () => {
-    loadSavedSheets(); // CARREGA PARTITURAS AO INICIAR
-});
-
-// Função de renderização original (mantida sem alterações)
-function renderSheetMusic(notes) {
-    if (!notes || notes.trim() === "") {
-        console.error("Nenhuma nota detectada.");
+    if (!title || !notes) {
+        alert("Por favor, preencha todos os campos");
         return;
     }
 
-    notes = notes.replace(/\s+/g, "").toUpperCase();
-    var notesArray = notes.split(",").map(note => note + "/8");
+    try {
+        const response = await fetch(`/api/sheets/${currentEditingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, notes })
+        });
 
-    var vf = new Vex.Flow.Factory({
-        renderer: { elementId: 'sheet-music', width: 800, height: 600 }
-    });
+        if (response.ok) {
+            loadSavedSheets();
+            closeModal();
+        } else {
+            console.error("Erro ao salvar edição");
+        }
+    } catch (error) {
+        console.error("Erro:", error);
+    }
+}
 
-    var score = vf.EasyScore();
-    var system = vf.System();
+async function deleteSheet(id) {
+    if (confirm("Tem certeza que deseja excluir esta partitura?")) {
+        try {
+            const response = await fetch(`/api/sheets/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                loadSavedSheets();
+            } else {
+                console.error("Erro ao excluir partitura");
+            }
+        } catch (error) {
+            console.error("Erro:", error);
+        }
+    }
+}
+
+// Função de renderização da partitura
+function renderSheetMusic(notes) {
+    if (!notes || !document.getElementById('sheet-music')) return;
 
     try {
-        var groupedNotes = [];
-        for (var i = 0; i < notesArray.length; i += 8) {
-            var group = notesArray.slice(i, i + 8);
+        // Limpa o canvas antes de renderizar
+        const canvas = document.getElementById('sheet-music');
+        const context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Prepara as notas
+        const cleanedNotes = notes.replace(/\s+/g, '').toUpperCase();
+        const notesArray = cleanedNotes.split(',').map(note => note + '/8');
+
+        // Configuração do VexFlow
+        const vf = new Vex.Flow.Factory({
+            renderer: { elementId: 'sheet-music', width: 800, height: 600 }
+        });
+
+        const score = vf.EasyScore();
+        const system = vf.System();
+
+        // Agrupa as notas em compassos
+        const groupedNotes = [];
+        for (let i = 0; i < notesArray.length; i += 8) {
+            let group = notesArray.slice(i, i + 8);
             while (group.length < 8) group.push("B4/r");
             groupedNotes.push(group.join(","));
         }
 
-        groupedNotes.forEach(function (group) {
+        // Adiciona cada compasso ao sistema
+        groupedNotes.forEach(group => {
             system.addStave({
                 voices: [score.voice(score.notes(group, { stem: 'up' }))]
             }).addClef('treble').addTimeSignature('8/8');
         });
 
+        // Renderiza
         vf.draw();
+
     } catch (error) {
-        console.error("Erro ao renderizar:", error);
+        console.error("Erro ao renderizar partitura:", error);
     }
 }
+
+// Funções globais necessárias para o HTML
+window.openEditSheet = openEditSheet;
+window.renderSavedSheet = renderSheetMusic;
+window.deleteSheet = deleteSheet;
+window.closeModal = closeModal;
+window.saveEditedSheet = saveEditedSheet;

@@ -1,53 +1,77 @@
 <!DOCTYPE html>
-<html lang="pt_br" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Melodify</title>
+    <meta name="description" content="Transforme gravações de áudio em partituras musicais automaticamente com o Melodify">
+    <title>Melodify | Áudio para Partitura Automático</title>
     <link rel="stylesheet" href="index.css">
     <link rel="icon" href="nota.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<nav class="navbar">
-    <h2 id="home"><a th:href="@{/}">Home</a></h2>
-    <h1 id="titulo"><span class="blue-letter">M</span>elodify</h1>
-</nav>
-<div id="azul">
-    <h1 class="outline">Transforme suas ideias em música</h1>
-    <img src="beethoven.png" height="180" alt="imagem de beethoven">
-    <div id="preto"></div>
+<div class="app-container">
+    <!-- Header Minimalista -->
+    <header class="app-header">
+        <div class="logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 3V21" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8 8L16 5V19L8 16" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Melodify</span>
+        </div>
+    </header>
+
+    <!-- Hero Section Focada -->
+    <main class="hero-section">
+        <div class="hero-content">
+            <h1>Crie partituras com rapidez e facilidade</h1>
+            <p class="subtitle">O Melodify converte gravações de áudio em notação musical com praticidade</p>
+            <div class="cta-container">
+                <!-- Altere o link do botão principal para: -->
+                <a th:href="@{/application}" class="btn-primary btn-large">Começar agora
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3v3m0 12v3m8-8h-3M7 12H4m13.364-5.364l-2.12 2.121M6.343 17.657l-2.12 2.121M17.657 6.343l2.121-2.12M6.343 17.657l2.121 2.12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Começar agora
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <img src="beethoven.png" alt="Descrição da imagem" class="hero-image">
+        </div>
+    </main>
+
+    <!-- Seção de Recursos -->
+    <section class="features-section" id="features">
+        <h2>Como funciona</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">1</div>
+                <h3>Grave ou envie áudio</h3>
+                <p>Use seu microfone ou envie um arquivo de áudio existente</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">2</div>
+                <h3>Processamento inteligente</h3>
+                <p>O audio é processado indentificando notas e ritmos</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">3</div>
+                <h3>Partitura gerada</h3>
+                <p>Receba sua partitura em formato editável</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rodapé -->
+    <footer class="app-footer">
+        <div class="footer-content">
+        </div>
+        <div class="footer-copyright">
+            <p>© 2024 Melodify - Projeto acadêmico UFRPE-UABJ</p>
+        </div>
+    </footer>
 </div>
-<main>
-    <h3>Bem vindo ao Melodify</h3>
-    <p>Esse site foi dessenvolvido por estudantes da UFRPE-UABJ do curso de engenharia da computação.</p>
-    <p>Fazendo uso da <a href="https://developer.mozilla.org/pt-BR/docs/Web/API/Web_Audio_API">Web Audio Api</a> tornamos possivel a criação de partituras musicais apenas com a captura de audio.</p>
-    <div id="principal_bottom"> <a th:href="@{/application}">Comece aqui</a> </div>
-</main>
-</body>
-</html><!DOCTYPE html>
-<html lang="pt_br" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Melodify</title>
-    <link rel="stylesheet" href="index.css">
-    <link rel="icon" href="nota.png">
-</head>
-<body>
-<nav class="navbar">
-    <h2 id="home"><a th:href="@{/}">Home</a></h2>
-    <h1 id="titulo"><span class="blue-letter">M</span>elodify</h1>
-</nav>
-<div id="azul">
-    <h1 class="outline">Transforme suas ideias em música</h1>
-    <img src="beethoven.png" height="180" alt="imagem de beethoven">
-    <div id="preto"></div>
-</div>
-<main>
-    <h3>Bem vindo ao Melodify</h3>
-    <p>Esse site foi dessenvolvido por estudantes da UFRPE-UABJ do curso de engenharia da computação.</p>
-    <p>Fazendo uso da <a href="https://developer.mozilla.org/pt-BR/docs/Web/API/Web_Audio_API">Web Audio Api</a> tornamos possivel a criação de partituras musicais apenas com a captura de audio.</p>
-    <div id="principal_bottom"> <a th:href="@{/application}">Comece aqui</a> </div>
-</main>
 </body>
 </html>

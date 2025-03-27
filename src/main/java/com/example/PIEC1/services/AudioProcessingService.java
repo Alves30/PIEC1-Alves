@@ -20,9 +20,25 @@ public class AudioProcessingService {
 
     public String converteFrequenciaParaNotas(float frequencia) {
         final String[] notas = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-        int notaNumero = (int) Math.round(12 * (Math.log(frequencia / 440.0) / Math.log(2)));
-        int indiceNota = (notaNumero + 69) % 12;
-        int oitava = (notaNumero + 69) / 12  - 1;
+
+        // Tratamento para frequência inválida ou silêncio
+        if (frequencia <= 0 || Float.isNaN(frequencia)) {
+            return "R"; // Representa silêncio (rest)
+        }
+
+        // Cálculo preciso da nota usando a fórmula A4 = 440Hz
+        double notaNumero = 12 * (Math.log(frequencia / 440.0) / Math.log(2));
+
+        // Arredondamento para a nota mais próxima
+        int indiceNota = (int) Math.round(notaNumero) % 12;
+        indiceNota = indiceNota < 0 ? indiceNota + 12 : indiceNota;
+
+        // Cálculo da oitava (A4 = 440Hz é a nota A na 4ª oitava)
+        int oitava = (int) Math.floor(notaNumero / 12) + 4;
+
+        // Limita a oitavas razoáveis (0-8)
+        oitava = Math.max(0, Math.min(8, oitava));
+
         return notas[indiceNota] + oitava;
     }
 
@@ -41,22 +57,44 @@ public class AudioProcessingService {
         }
 
         List<String> notasDetectadas = new ArrayList<>();
+        final float[] lastPitch = {0};
+        final int[] samePitchCount = {0};
 
         AudioDispatcher dispatcher = AudioDispatcherFactory.fromPipe(
-                tempFile.getAbsolutePath(), 44100, 2048, 1024 // Aumentei o tamanho do buffer para 2048
-        );
+                tempFile.getAbsolutePath(), 44100, 4096, 0); // Buffer maior, overlap zero
 
+        dispatcher.addAudioProcessor(new PitchProcessor(
+                PitchEstimationAlgorithm.FFT_YIN, // Algoritmo mais preciso
+                44100,
+                4096,
+                (pitchDetectionResult, audioEvent) -> {
+                    float pitch = pitchDetectionResult.getPitch();
+                    float probability = pitchDetectionResult.getProbability();
 
-        dispatcher.addAudioProcessor(new PitchProcessor(PitchEstimationAlgorithm.YIN, 44100, 1024, (pitchDetectionResult, audioEvent) -> {
-            float pitch = pitchDetectionResult.getPitch();
-            float probability = pitchDetectionResult.getProbability();
+                    // Filtros aprimorados
+                    if (pitch > 65 && pitch < 2000 && probability > 0.97) {
+                        // Filtro de persistência - só aceita notas estáveis
+                        if (Math.abs(pitch - lastPitch[0]) < 10) {
+                            samePitchCount[0]++;
+                        } else {
+                            samePitchCount[0] = 0;
+                        }
 
-            // Filtro: ignora notas com pitch fora do intervalo esperado ou com baixa probabilidade
-            if (pitch > 50 && pitch < 2000 && probability > 0.95) { // Frequências entre 50 Hz e 2000 Hz
-                String nota = converteFrequenciaParaNotas(pitch);
-                notasDetectadas.add(nota);
-            }
-        }));
+                        lastPitch[0] = pitch;
+
+                        // Só adiciona se a nota persistiu por 3 detecções
+                        if (samePitchCount[0] >= 3) {
+                            String nota = converteFrequenciaParaNotas(pitch);
+                            if (!notasDetectadas.isEmpty() &&
+                                    !notasDetectadas.get(notasDetectadas.size()-1).equals(nota)) {
+                                notasDetectadas.add(nota);
+                            } else if (notasDetectadas.isEmpty()) {
+                                notasDetectadas.add(nota);
+                            }
+                            samePitchCount[0] = 0; // Reset após adicionar
+                        }
+                    }
+                }));
         dispatcher.run();
 
         return String.join(",", notasDetectadas);

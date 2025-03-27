@@ -1,158 +1,318 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #10375C;
+/* Variáveis e Reset */
+:root {
+    --primary: #10375C;
+    --primary-dark: #2563EB;
+    --secondary: #F3C623;
+    --danger: #EF4444;
+    --text: #1F2937;
+    --text-light: #6B7280;
+    --bg: #10375C;
+    --white: #FFFFFF;
+    --gray-light: #E5E7EB;
+    --gray-medium: #D1D5DB;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+* {
     margin: 0;
     padding: 0;
-}
-#savedSheets {
-    margin: 20px;
-    padding: 15px;
-    border: 1px solid #ccc;
-    background: #f9f9f9;
+    box-sizing: border-box;
 }
 
-#savedSheetsList li {
-    list-style: none;
-    margin: 10px 0;
-    padding: 10px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    background-color: var(--bg);
+    line-height: 1.5;
 }
 
-#clearSheetsButton {
-    margin-bottom: 10px;
-    padding: 5px 10px;
-    background: #ff4444;
-    color: white;
-    border: none;
-    cursor: pointer;
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.app-header {
+    background-color: var(--white);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .navbar {
-    background-color: #FF7F00;
-    color: white;
-    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.logo {
+    text-decoration: none;
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.highlight {
+    text-decoration: none;
+}
+
+
+
+.highlight {
+    color: var(--primary);
+}
+
+.btn-text {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-text:hover {
+    color: var(--primary);
+}
+
+/* Layout Principal */
+.app-container {
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Seção de Controles */
+.tool-section {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 2rem;
+}
+
+.controls-panel {
+    background-color: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    height: fit-content;
+}
+
+.controls-panel h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    color: var(--primary);
+}
+
+.controls-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-control {
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.btn-control.primary {
+    background-color: var(--primary);
+    color: var(--white);
+}
+
+.btn-control.primary:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-control.secondary {
+    background-color: var(--white);
+    color: var(--primary);
+    border: 1px solid var(--gray-medium);
+}
+
+.btn-control.secondary:hover {
+    border-color: var(--primary);
+    background-color: var(--bg);
+}
+
+.btn-control.danger {
+    background-color: var(--danger);
+    color: var(--white);
+}
+
+.btn-control.danger:hover {
+    opacity: 0.9;
+}
+
+.btn-control:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#recordButton.recording {
+    background-color: var(--danger);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.audio-info {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-light);
+}
+
+.audio-info p {
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+/* Gravações */
+.recordings-panel {
+    background-color: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-top: 1rem;
+}
+
+.recordings-panel h3 {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.recordings-list {
+    list-style: none;
+}
+
+.recordings-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--gray-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.blue-letter{
-    color: #10375C;
-}
-#home a:hover {
-    color: #10375C;
+
+.recordings-list li:last-child {
+    border-bottom: none;
 }
 
-
-.navbar h1 {
-    margin: 0;
-}
-
-.navbar h2 {
-    margin: 0;
-}
-
-.navbar a {
-    color: white;
+.recordings-list a {
+    color: var(--primary);
     text-decoration: none;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
 
-#controls {
-    margin: 20px;
+.recordings-list a:hover {
+    background-color: var(--bg);
 }
 
-#formats {
-    margin: 20px;
+/* Partitura */
+.sheet-section {
+    grid-column: span 2;
 }
 
-#recordingsList {
-    margin: 20px;
+.sheet-container {
+    background-color: var(--white);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
 }
 
-/* Estilo para a div que contém a partitura */
-#score {
-    background-color: #f0f0f0; /* Cor de fundo da div (cinza claro) */
-    padding: 20px; /* Espaçamento interno */
-    border-radius: 10px; /* Bordas arredondadas */
-    margin: 20px auto; /* Centraliza a div e adiciona margem */
-    width: 80%; /* Largura da div */
-    max-width: 800px; /* Largura máxima */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
-}
-
-/* Estilo para o canvas (partitura) */
 #sheet-music {
-    background-color: white; /* Fundo branco para a partitura */
-    display: block; /* Garante que o canvas se comporte como um bloco */
-    margin: 0 auto; /* Centraliza o canvas */
-    border: 1px solid #ccc; /* Borda sutil */
+    background-color: var(--white);
+    display: block;
+    margin: 0 auto;
+    border: 1px solid var(--gray-medium);
+    border-radius: 4px;
+    max-width: 100%;
 }
 
-/* Estilo específico para os botões na div #controls */
-#recordButton, #pauseButton, #stopButton, #clearSheetMusicButton, #clearRecordingsButton {
-    background-color: #ffffff;
-    color: rgb(0, 0, 0);
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 20px 10px; /* Margem específica para os botões na div #controls */
-    font-size: 14px; /* Tamanho da fonte */
-    transition: background-color 0.3s ease; /* Efeito de transição */
+/* Partituras Salvas */
+.saved-sheets {
+    background-color: var(--white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    grid-column: span 2;
 }
 
-/* Efeito hover para os botões na div #controls */
-#recordButton:hover, #pauseButton:hover, #stopButton:hover, #clearSheetMusicButton:hover, #clearRecordingsButton:hover {
-    background-color: lightyellow; /* Cor de fundo ao passar o mouse */
-}
-#recordButton.recording {
-    background-color: #ff0000; /* Vermelho */
-    color: white; /* Texto branco para melhor contraste */
-}
-#recordButton.recording:hover {
-    background-color: #cc0000; /* Vermelho mais escuro ao passar o mouse */
-}
-
-/* Estilo específico para os botões de Upload e Save to disk */
-#recordingsList a {
-    background-color: #ffffff;
-    color: rgb(0, 0, 0);
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 5px; /* Margem menor para os botões de Upload e Save */
-    text-decoration: none; /* Remove sublinhado de links */
-    display: inline-block; /* Garante que os links se comportem como botões */
-    font-size: 14px; /* Tamanho da fonte */
-    transition: background-color 0.3s ease; /* Efeito de transição */
-}
-
-/* Efeito hover para os botões de Upload e Save to disk */
-#recordingsList a:hover {
-    background-color: #f0f0f0; /* Cor de fundo ao passar o mouse */
-}
-
-#controls {
+.saved-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.saved-header h3 {
+    font-size: 1.25rem;
+    color: var(--primary);
+}
+
+.sheets-list {
+    list-style: none;
+}
+
+.sheets-list li {
+    padding: 1rem;
+    background-color: var(--bg);
+    border-radius: var(--border-radius);
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
 }
 
-#formats {
-    text-align: center;
-    color: #F3C623;
+.sheets-list li:last-child {
+    margin-bottom: 0;
 }
 
-p {
-    color: #F3C623;
-    margin: 5px;
+.sheet-title {
+    font-weight: 600;
+    color: var(--text);
 }
 
-/* ... (estilos existentes) ... */
+.sheet-actions {
+    display: flex;
+    gap: 0.5rem;
+}
 
-/* Estilos do Modal */
+.sheet-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: color 0.2s;
+}
+
+.sheet-actions button:hover {
+    color: var(--primary);
+}
+
+/* Modal */
 .modal {
     display: none;
     position: fixed;
@@ -162,33 +322,93 @@ p {
     height: 100%;
     background-color: rgba(0,0,0,0.5);
     z-index: 1000;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 20px;
-    width: 60%;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.sheet-title {
-    font-weight: bold;
-    margin-right: 15px;
-    color: #2c3e50;
-}
-
-#editTitle {
+    background-color: var(--white);
+    padding: 2rem;
     width: 100%;
-    margin-bottom: 10px;
-    padding: 8px;
+    max-width: 500px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
 }
 
-#editNotes {
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-light);
+}
+
+.modal-content h3 {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.form-group input,
+.form-group textarea {
     width: 100%;
-    height: 200px;
-    margin-bottom: 15px;
-    padding: 8px;
+    padding: 0.75rem;
+    border: 1px solid var(--gray-medium);
+    border-radius: var(--border-radius);
+    font-family: 'Inter', sans-serif;
+}
+
+.form-group textarea {
+    min-height: 150px;
     resize: vertical;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+a:visited {
+    color: #10375C;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .tool-section {
+        grid-template-columns: 1fr;
+    }
+
+    .sheet-section {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .controls-group {
+        flex-direction: column;
+    }
+
+    .btn-control {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .modal-content {
+        margin: 1rem;
+        width: calc(100% - 2rem);
+    }
 }

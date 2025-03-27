@@ -1,52 +1,123 @@
 <!DOCTYPE html>
-<html lang="pt_br" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Melodify</title>
+    <title>Melodify - Criar Partitura</title>
+    <meta name="description" content="Crie partituras musicais a partir de gravações de áudio com o Melodify">
     <link rel="stylesheet" href="application.css">
-    <link rel="icon" href="nota.png">
-    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
+    <link rel="icon" href="assets/images/nota.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-<nav class="navbar">
-    <h2 id="home"><a th:href="@{/}">Home</a></h2>
-    <h1 id="titulo"><span class="blue-letter">M</span>elodify</h1>
-</nav>
-<div class="display"></div>
-<div id="controls">
-    <button id="recordButton">Record</button>
-    <button id="pauseButton" disabled>Pause</button>
-    <button id="stopButton" disabled>Stop</button>
-    <button id="clearSheetMusicButton">Reset Sheet</button>
-    <button id="clearRecordingsButton">Reset Audios</button>
-</div>
-<div id="formats">Formato: comece a gravar para ver a taxa de amostragem</div>
-<p><strong>Gravações:</strong></p>
-<ol id="recordingsList"></ol>
+<header class="app-header">
+    <nav class="navbar container">
+        <a th:href="@{/}" class="logo">
+            <h1><span class="highlight">M</span>elodify</h1>
+        </a>
+        <!-- Altere o link "Voltar para Home" para: -->
+        <a th:href="@{/}" class="btn-text">Voltar para Home</a>
+    </nav>
+</header>
 
+<main class="app-container">
+    <section class="tool-section">
+        <div class="controls-panel">
+            <h2>Criar Nova Partitura</h2>
+            <div class="controls-group">
+                <button id="recordButton" class="btn-control primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor"/>
+                        <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" fill="currentColor"/>
+                    </svg>
+                    Gravar
+                </button>
+                <button id="pauseButton" class="btn-control" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+                    </svg>
+                    Pausar
+                </button>
+                <button id="stopButton" class="btn-control" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6h12v12H6z" fill="currentColor"/>
+                    </svg>
+                    Parar
+                </button>
+            </div>
 
-<div id="score">
-    <canvas id="sheet-music"></canvas>
-</div>
+            <div class="controls-group">
+                <button id="clearSheetMusicButton" class="btn-control secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14zM6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z" fill="currentColor"/>
+                    </svg>
+                    Limpar Partitura
+                </button>
+                <button id="clearRecordingsButton" class="btn-control secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.12 10.47L12 12.59l-2.13-2.12-1.41 1.41L10.59 14l-2.12 2.12 1.41 1.41L12 15.41l2.12 2.12 1.41-1.41L13.41 14l2.12-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4zM6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z" fill="currentColor"/>
+                    </svg>
+                    Limpar Áudios
+                </button>
+            </div>
 
+            <div class="audio-info">
+                <p id="formats">Status: Pronto para gravar</p>
+            </div>
+        </div>
+
+        <div class="recordings-panel">
+            <h3>Gravações Recentes</h3>
+            <ol id="recordingsList" class="recordings-list"></ol>
+        </div>
+    </section>
+
+    <section class="sheet-section">
+        <div class="sheet-container" id="score">
+            <canvas id="sheet-music"></canvas>
+        </div>
+    </section>
+
+    <section class="saved-sheets">
+        <div class="saved-header">
+            <h3>Partituras Salvas</h3>
+            <button id="clearSheetsButton" class="btn-control danger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
+                </svg>
+                Limpar Tudo
+            </button>
+        </div>
+        <ul id="savedSheetsList" class="sheets-list"></ul>
+    </section>
+</main>
+
+<!-- Modal de Edição -->
 <div id="editModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
+        <button class="close-btn" onclick="closeModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/>
+            </svg>
+        </button>
         <h3>Editar Partitura</h3>
-        <input type="text" id="editTitle" placeholder="Título da Partitura">
-        <textarea id="editNotes" rows="10" placeholder="Notas (ex: C4,D5,E3)"></textarea>
-        <button onclick="saveEditedSheet()">Salvar Alterações</button>
+        <div class="form-group">
+            <label for="editTitle">Título:</label>
+            <input type="text" id="editTitle" placeholder="Nome da sua partitura">
+        </div>
+        <div class="form-group">
+            <label for="editNotes">Notas:</label>
+            <textarea id="editNotes" rows="8" placeholder="Insira as notas no formato correto (ex: C4, D5, E3)"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeModal()" class="btn-control secondary">Cancelar</button>
+            <button onclick="saveEditedSheet()" class="btn-control primary">Salvar Partitura</button>
+        </div>
     </div>
 </div>
 
-<div id="savedSheets">
-    <h3>Partituras Salvas</h3>
-    <button id="clearSheetsButton">Limpar Todas</button>
-    <ul id="savedSheetsList"></ul>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js"></script>
 <script src="recorder.js"></script>
-<script src="script.js" defer></script>
+<script src="script.js"></script>
 </body>
 </html>
